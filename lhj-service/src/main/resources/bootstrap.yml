@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: lhjService
+  profiles:
+    active: dev
+
+---
+spring:
+  profiles: dev
+  cloud:
+    nacos:
+      config:
+        ## 此处两种配置方式 1. 节点列表，用"," 分隔 2. 应用 endpoint 方式，此处应用负载均衡方式，获取对应的server-addr 列表
+        ## 说明 server-addr 配置的优先级 高于 endpoint
+        server-addr: 192.168.1.90:8848
+        # 此处的坑 -> 1. 如果在不配置集群名称的时候, 在  nginx 中 配置的静态文件的目录 必须为 /**/nacos/serverlist, 才能匹配 例如:
+        # http://nacos.izaodao.com:9081/nacos/serverlist
+        # 2. 如果配置了集群名称的时候， 在  nginx 中 配置的静态文件的目录 必须为 /**/nacos/${cluster-name}，才能匹配 例如：
+        # http://nacos.izaodao.com:9081/nacos/${cluster-name}
+        # serverlist 或者 ${cluster-name} 为/**/nacos 文件夹下的 文件名称
+        #        endpoint: nacos.izaodao.com:9081
+        # 集群名称配合 endpoint 使用
+        #        cluster-name: zaodaonacoscluster
+        # 轮询获取最新配置，不建议使用， 占用部分带宽(长连接轮训方式获取最新配置)，，对应的参数 configLongPollTimeout 等等
+        # enableRemoteSyncConfig: false
+        prefix: ${spring.application.name}
+        file-extension: yml
+        shared-dataids: base.yml,common.yml
+        refreshable-dataids: base.yml
+        namespace: 9c0ba88b-9d15-4ed9-903e-9461b2dc5234
+        group: DEFAULT_GROUP
+        encode: UTF-8
+#base.yml
+#spring:
+#  main:
+#    allow-bean-definition-overriding: true
+#dubbo:
+#  registry:
+#    address: spring-cloud://192.168.1.90
+#  protocol:
+#    name: dubbo
+#    port: -1
+#  consumer:
+#    check: false
+#    version: lhj
+#  provider:
+#    version: lhj
+
+#lhjService-dev.yml
+#server:
+#  port: 8001
+#dubbo:
+#  scan:
+#    base-packages: com.lhj.*.serviceImpl
