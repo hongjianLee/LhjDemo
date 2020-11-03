@@ -1,7 +1,10 @@
 package com.lhj.user.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lhj.lhjcore.IService.IUserService;
+import com.lhj.lhjcore.entity.User;
+import com.lhj.utils.redis.JedisTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +17,7 @@ import java.util.Map;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author 李洪健
@@ -24,14 +27,27 @@ import java.util.Map;
 @RequestMapping("/user/user")
 public class UserController {
 
+
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private JedisTemplate jedisTemplate;
+
     @GetMapping("get/{id}")
-    public String get(@PathVariable Long id){
+    public String get(@PathVariable Long id) {
 
         Map<String, Object> map = new HashMap<>(2);
-        map.put("id",id);
+        map.put("id", id);
         return userService.listByMap(map).toString();
+    }
+
+    @GetMapping("redis/{id}")
+    public String redis(@PathVariable Long id) {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("id", id);
+        User user = userService.getOne(wrapper);
+        jedisTemplate.setString("user", user.getName(), 1000);
+        return jedisTemplate.getString("user");
     }
 }
