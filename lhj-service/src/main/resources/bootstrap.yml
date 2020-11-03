@@ -30,6 +30,7 @@ spring:
         namespace: 9c0ba88b-9d15-4ed9-903e-9461b2dc5234
         group: DEFAULT_GROUP
         encode: UTF-8
+
 #base.yml
 #spring:
 #  main:
@@ -52,3 +53,9 @@ spring:
 #dubbo:
 #  scan:
 #    base-packages: com.lhj.*.serviceImpl
+#spring:
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://39.105.162.102:3306/lhjDemo?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false
+#    username: root
+#    password: 772147
