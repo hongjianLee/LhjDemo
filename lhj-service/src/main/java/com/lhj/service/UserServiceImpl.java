@@ -1,7 +1,7 @@
-package com.lhj.user.service.impl;
+package com.lhj.service;
 
 import com.lhj.lhjcore.entity.User;
-import com.lhj.user.mapper.UserMapper;
+import com.lhj.mapper.UserMapper;
 import com.lhj.lhjcore.IService.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.dubbo.config.annotation.Service;
@@ -14,7 +14,7 @@ import org.apache.dubbo.config.annotation.Service;
  * @author 李洪健
  * @since 2020-11-03
  */
-@Service(version = "${dubbo.provider.version}", timeout = 100000)
+@Service(version = "${dubbo.provider.version}", timeout = 5000)
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
 }

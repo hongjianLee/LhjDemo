@@ -52,7 +52,7 @@ spring:
 #  port: 8001
 #dubbo:
 #  scan:
-#    base-packages: com.lhj.*.serviceImpl
+#    base-packages: com.lhj.service
 #spring:
 #  datasource:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
@@ -79,3 +79,7 @@ spring:
 #      max-idle: 20
 #      ## 连接池中的最小空闲连接
 #      min-idle: 0
+#rocketmq:
+#  name-server: 39.105.162.102:9876
+#  consumer:
+#    group: lhjRocketConsumerGroup

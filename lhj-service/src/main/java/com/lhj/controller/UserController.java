@@ -1,4 +1,4 @@
-package com.lhj.user.controller;
+package com.lhj.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

@@ -1,4 +1,4 @@
-package com.lhj.user.mapper;
+package com.lhj.mapper;
 
 import com.lhj.lhjcore.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
