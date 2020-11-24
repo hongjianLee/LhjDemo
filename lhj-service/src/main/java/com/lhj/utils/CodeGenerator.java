@@ -51,9 +51,9 @@ public class CodeGenerator {
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://39.105.162.102:3306/lhjDemo?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false");
+        dsc.setUrl("jdbc:mysql://192.168.1.90:3306/zaodaopay?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false");
         // dsc.setSchemaName("public");
-        dsc.setDriverName("com.mysql.cj.jdbc.Driver");
+        dsc.setDriverName("com.mysql.jdbc.Driver");
         dsc.setUsername("root");
         dsc.setPassword("772147");
         mpg.setDataSource(dsc);

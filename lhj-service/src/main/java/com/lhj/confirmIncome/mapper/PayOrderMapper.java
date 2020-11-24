@@ -1,6 +1,6 @@
-package com.lhj.mapper;
+package com.lhj.confirmIncome.mapper;
 
-import com.lhj.lhjcore.entity.User;
+import com.lhj.confirmIncome.entity.PayOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -10,9 +10,9 @@ import org.apache.ibatis.annotations.Mapper;
  * </p>
  *
  * @author 李洪健
- * @since 2020-11-03
+ * @since 2020-11-16
  */
 @Mapper
-public interface UserMapper extends BaseMapper<User> {
+public interface PayOrderMapper extends BaseMapper<PayOrder> {
 
 }
