@@ -453,7 +453,7 @@ public class RegisterUserNewController {
                                 .filter(o -> o.getMonthTime().isBefore(item.getMonthTime())
                                         || o.getMonthTime().equals(item.getMonthTime())).count()
                 );
-                param.setCurConfirmIncome(item.getAllSpiltPrice());
+                param.setCurConfirmIncome(item.getSpiltPrice());
                 param.setLeftNoConfirmIncome(item.getNoPrice());
                 param.setPoints(item.getAllPoint());
                 param.setCurConfirmPoints(item.getSpiltPoint());
