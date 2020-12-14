@@ -165,7 +165,6 @@ public class RegisterUserNewController {
             qw1.eq("month_time", LocalDate.of(item.getPayTime().getYear(), item.getPayTime().getMonthValue(), 2));
             qw1.eq("app_id", item.getAppId());
             ConfirmIncomeStatistics confirmIncomeStatistics = confirmIncomeStatisticsService.getOne(qw1);
-
             CashIncomeInfo param = new CashIncomeInfo();
             param.setId(item.getId());
             param.setCreateUser(Long.valueOf(item.getCreateUser()));
@@ -190,7 +189,7 @@ public class RegisterUserNewController {
                 param.setServicePeriod(zdIncomeActualSaves.get(0).getPeriodMonth());
                 param.setFirstConfirmIncome(
                         zdIncomeActualSaves.stream()
-                                .filter(o -> o.getActualDate() != null)
+                                .filter(o -> Objects.nonNull(o.getActualDate()))
                                 .min((e1, e2) -> e1.getActualDate().compareTo(e2.getActualDate()))
                                 .get().getActualAmount()
                 );
@@ -350,21 +349,28 @@ public class RegisterUserNewController {
         Map<String, Object> map = new HashMap<>();
         map.put("app_id", appId);
         List<RegisterUserNew> registerUserNewList = registerUserNewService.listByMap(map);
-        Vector<CashIncomeInfo> cashIncomeInfoVector = new Vector<>();
+        List<CashIncomeInfo> cashIncomeInfoList = new ArrayList<>();
 
         if (CollectionUtil.isNotEmpty(registerUserNewList)) {
-            registerUserNewList.parallelStream()
+            registerUserNewList.stream()
                     .filter(a -> !"德语组一".equals(a.getOrderId())
                             && !"韩语组一".equals(a.getOrderId()))
                     .forEach(item -> {
+                        CashIncomeInfo cashIncomeInfo = new CashIncomeInfo();
                         QueryWrapper queryWrapper = new QueryWrapper<PayOrder>();
                         queryWrapper.eq("order_code", item.getOrderId());
                         PayOrder payOrder = payOrderService.getOne(queryWrapper);
                         log.error(item.getOrderId().toString());
-                        ConcurrentHashMap<String, Object> actMap = new ConcurrentHashMap<>();
-                        actMap.put("order_id", payOrder.getOrderCode());
-                        Vector<ActivateUserNew> activateUserNews = new Vector<ActivateUserNew>(activateUserNewService.listByMap(actMap));
-                        CashIncomeInfo cashIncomeInfo = new CashIncomeInfo();
+                        Map<String, Object> actMap = new HashMap<>();
+                        if (payOrder.getPayOrderType() == 2 || payOrder.getPayOrderType() == 3) {
+                            actMap.put("order_id", payOrder.getParentId());
+                            cashIncomeInfo.setOrderCode(payOrder.getParentId());
+                        } else {
+                            actMap.put("order_id", payOrder.getOrderCode());
+                            cashIncomeInfo.setOrderCode(item.getOrderId());
+                        }
+                        List<ActivateUserNew> activateUserNews = activateUserNewService.listByMap(actMap);
+
                         cashIncomeInfo.setId(item.getId());
                         cashIncomeInfo.setCreateUser(item.getCreateUser());
                         cashIncomeInfo.setCreateTime(LocalDateTime.now());
@@ -374,7 +380,6 @@ public class RegisterUserNewController {
                             cashIncomeInfo.setBusinessTagId(Long.valueOf(businessTagId));
                         }
                         cashIncomeInfo.setAppId(appId);
-                        cashIncomeInfo.setOrderCode(item.getOrderId());
                         cashIncomeInfo.setGoodsName(item.getGoodsName());
                         cashIncomeInfo.setGoodsId(item.getGoodsId());
                         cashIncomeInfo.setZaoyuan(BigDecimal.ZERO);
@@ -386,7 +391,17 @@ public class RegisterUserNewController {
                         cashIncomeInfo.setConfirmIncomeMethod(1);
                         cashIncomeInfo.setOpenId(item.getCreateUser());
                         cashIncomeInfo.setUserName(item.getCreateName());
+//                        微课，青柠五十音现金收入即确认收入
+                        if (item.getAppId().equals("f240292f76bf4bb1a2336f1fa51421c9")
+                        || item.getAppId().equals("72d6c41307e14c478d836072a62db662")) {
+                            cashIncomeInfo.setConfirmIncomeMethod(2);
+                            cashIncomeInfo.setIsConfirming(2);
+                        }
+                        if (item.getAppId().equals("887b86de893d476fb83d6d0f9a7fa834")) {
+                            cashIncomeInfo.setConfirmIncomeMethod(4);
+                        }
                         if (CollectionUtil.isNotEmpty(activateUserNews)) {
+                            cashIncomeInfo.setIsConfirming(1);
                             cashIncomeInfo.setServicePeriod(activateUserNews.get(0).getServiceTime());
                             cashIncomeInfo.setFirstConfirmIncome(
                                     activateUserNews.stream()
@@ -399,11 +414,11 @@ public class RegisterUserNewController {
                             cashIncomeInfo.setFirstConfirmIncome(BigDecimal.ZERO);
                         }
                         cashIncomeInfo.setIsZaoyuanCharge(2);
-                        cashIncomeInfoVector.add(cashIncomeInfo);
+                        cashIncomeInfoList.add(cashIncomeInfo);
                     });
 
         }
-        boolean flag = cashIncomeInfoService.saveBatch(cashIncomeInfoVector);
+        boolean flag = cashIncomeInfoService.saveBatch(cashIncomeInfoList);
         log.error(String.valueOf(flag));
     }
     // 小语种确认收入
@@ -459,6 +474,7 @@ public class RegisterUserNewController {
                 param.setCurConfirmPoints(item.getSpiltPoint());
                 param.setConfirmedPoints(0);
                 if ("887b86de893d476fb83d6d0f9a7fa834".equals(appId)) {
+                    param.setConfirmIncomeMethod(4);
                     activateUserNewVector.stream()
                             .filter(o -> o.getConsumeTime().isBefore(item.getConsumeTime())
                                     && o.getSpiltPoint() != null).forEach(o -> {

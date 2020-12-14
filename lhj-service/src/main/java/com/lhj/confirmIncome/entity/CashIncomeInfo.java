@@ -94,5 +94,7 @@ public class CashIncomeInfo implements Serializable {
     @ApiModelProperty(value = "是否早元充值订单")
     private Integer isZaoyuanCharge;
 
+    @ApiModelProperty(value = "是否进入confirm_income_details表中确认")
+    private Integer isConfirming;
 
 }
