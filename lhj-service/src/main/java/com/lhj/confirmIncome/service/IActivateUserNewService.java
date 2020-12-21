@@ -2,6 +2,9 @@ package com.lhj.confirmIncome.service;
 
 import com.lhj.confirmIncome.entity.ActivateUserNew;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IActivateUserNewService extends IService<ActivateUserNew> {
 
+    List<String> getMonths(String appId);
 }

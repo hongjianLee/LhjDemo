@@ -116,9 +116,12 @@ public class RegisterUserNewController {
      */
     @GetMapping("dealWithConfirmData")
     public String dealWithConfirmData() {
-        for (String appId : appIds) {
-            this.confirmIncomeData(appId);
-        }
+       /* for (String appId : appIds) {
+            if (!appId.equals("887b86de893d476fb83d6d0f9a7fa834")) {
+                this.confirmIncomeData(appId);
+            }
+        }*/
+        this.confirmIncomeData("887b86de893d476fb83d6d0f9a7fa834");
         return "success";
     }
 
@@ -190,7 +193,7 @@ public class RegisterUserNewController {
                 param.setFirstConfirmIncome(
                         zdIncomeActualSaves.stream()
                                 .filter(o -> Objects.nonNull(o.getActualDate()))
-                                .min((e1, e2) -> e1.getActualDate().compareTo(e2.getActualDate()))
+                                .min(Comparator.comparing(ZdIncomeActualSave::getActualDate))
                                 .get().getActualAmount()
                 );
             } else {
@@ -423,76 +426,82 @@ public class RegisterUserNewController {
     }
     // 小语种确认收入
     private void confirmIncomeData(String appId) {
-        final String businessTagId = this.getBusinessTagId(appId);
-        Map<String, Object> map = new HashMap<>();
-        map.put("app_id", appId);
-        List<ActivateUserNew> activateUserNews = activateUserNewService.listByMap(map);
-        Vector<ConfirmIncomeDetails> confirmIncomeDetails = new Vector<>();
-        if (CollectionUtil.isNotEmpty(activateUserNews)) {
-            activateUserNews.parallelStream().forEach(item -> {
-                log.error(item.getOrderId());
-                QueryWrapper queryWrapper = new QueryWrapper<PayOrder>();
-                queryWrapper.eq("order_code", item.getOrderId());
-                PayOrder payOrder = payOrderService.getOne(queryWrapper);
-                ConcurrentHashMap<String, Object> actMap = new ConcurrentHashMap<>();
-                actMap.put("order_id", payOrder.getOrderCode());
-                Vector<ActivateUserNew> activateUserNewVector
-                        = new Vector<ActivateUserNew>(activateUserNewService.listByMap(actMap));
-                ConfirmIncomeDetails param = new ConfirmIncomeDetails();
-                param.setId(item.getId());
-                param.setStatisticsId(item.getStatisticalId());
-                param.setCreateUser(item.getCreateUser());
-                param.setCreateTime(LocalDateTime.now());
-                if (StringUtils.isNotEmpty(businessTagId)) {
-                    param.setBusinessTagId(Long.valueOf(businessTagId));
-                }
-                param.setAppId(appId);
-                param.setMonthTime(
-                        LocalDate.of(item.getMonthTime().getYear(), item.getMonthTime().getMonthValue(), 2)
-                );
-                param.setOrderCode(item.getOrderId());
-                param.setGoodsId(item.getGoodsId());
-                param.setGoodsName(item.getGoodsName());
-                param.setCash(item.getConsumePrice());
-                param.setOrderPrice(item.getConsumePrice());
-                param.setPayMethod(this.getValueByPayType(payOrder.getPayType()));
-                param.setPayTime(item.getConsumeTime());
-                param.setOpenId(item.getCreateUser());
-                param.setUserName(item.getCreateName());
-                param.setServicePeriod(item.getServiceTime());
-                if (item.getIsCurrent() != null && 1 == item.getIsCurrent()) {
-                    param.setIsCurMonth(item.getIsCurrent());
-                }
-                param.setCurPeriod(
-                        (int) activateUserNewVector.stream()
-                                .filter(o -> o.getMonthTime().isBefore(item.getMonthTime())
-                                        || o.getMonthTime().equals(item.getMonthTime())).count()
-                );
-                param.setCurConfirmIncome(item.getSpiltPrice());
-                param.setLeftNoConfirmIncome(item.getNoPrice());
-                param.setPoints(item.getAllPoint());
-                param.setCurConfirmPoints(item.getSpiltPoint());
-                param.setConfirmedPoints(0);
-                if ("887b86de893d476fb83d6d0f9a7fa834".equals(appId)) {
-                    param.setConfirmIncomeMethod(4);
-                    activateUserNewVector.stream()
-                            .filter(o -> o.getConsumeTime().isBefore(item.getConsumeTime())
-                                    && o.getSpiltPoint() != null).forEach(o -> {
-                        param.setConfirmedPoints(param.getConfirmedPoints() + o.getSpiltPoint());
-                    });
+        List<String> monthTimes = activateUserNewService.getMonths(appId);
+        monthTimes.stream()
+                .filter(o -> StringUtils.isNotEmpty(o))
+                .forEach(monthTime -> {
+            final String businessTagId = this.getBusinessTagId(appId);
+            Map<String, Object> map = new HashMap<>();
+            map.put("app_id", appId);
+            map.put("month_time", monthTime);
+            List<ActivateUserNew> activateUserNews = activateUserNewService.listByMap(map);
+            Vector<ConfirmIncomeDetails> confirmIncomeDetails = new Vector<>();
+            if (CollectionUtil.isNotEmpty(activateUserNews)) {
+                activateUserNews.parallelStream().forEach(item -> {
+                    log.error(item.getOrderId());
+                    QueryWrapper queryWrapper = new QueryWrapper<PayOrder>();
+                    queryWrapper.eq("order_code", item.getOrderId());
+                    PayOrder payOrder = payOrderService.getOne(queryWrapper);
+                    ConcurrentHashMap<String, Object> actMap = new ConcurrentHashMap<>();
+                    actMap.put("order_id", payOrder.getOrderCode());
+                    Vector<ActivateUserNew> activateUserNewVector
+                            = new Vector<ActivateUserNew>(activateUserNewService.listByMap(actMap));
+                    ConfirmIncomeDetails param = new ConfirmIncomeDetails();
+                    param.setId(item.getId());
+                    param.setStatisticsId(item.getStatisticalId());
+                    param.setCreateUser(item.getCreateUser());
+                    param.setCreateTime(LocalDateTime.now());
+                    if (StringUtils.isNotEmpty(businessTagId)) {
+                        param.setBusinessTagId(Long.valueOf(businessTagId));
+                    }
+                    param.setAppId(appId);
+                    param.setMonthTime(
+                            LocalDate.of(item.getMonthTime().getYear(), item.getMonthTime().getMonthValue(), 2)
+                    );
+                    param.setOrderCode(item.getOrderId());
+                    param.setGoodsId(item.getGoodsId());
+                    param.setGoodsName(item.getGoodsName());
+                    param.setCash(item.getConsumePrice());
+                    param.setOrderPrice(item.getConsumePrice());
+                    param.setPayMethod(this.getValueByPayType(payOrder.getPayType()));
+                    param.setPayTime(item.getConsumeTime());
+                    param.setOpenId(item.getCreateUser());
+                    param.setUserName(item.getCreateName());
+                    param.setServicePeriod(item.getServiceTime());
+                    if (item.getIsCurrent() != null && 1 == item.getIsCurrent()) {
+                        param.setIsCurMonth(item.getIsCurrent());
+                    }
                     param.setCurPeriod(
                             (int) activateUserNewVector.stream()
-                                    .filter(o -> o.getConsumeTime().isBefore(item.getConsumeTime())
-                                            || o.getConsumeTime().equals(item.getConsumeTime())).count()
+                                    .filter(o -> o.getMonthTime().isBefore(item.getMonthTime())
+                                            || o.getMonthTime().equals(item.getMonthTime())).count()
                     );
-                }
-                param.setExpireStartTime(item.getExpireStartTime());
-                param.setExpireEndTime(item.getExpireEndTime());
-                confirmIncomeDetails.add(param);
-            });
-        }
-        boolean flag = confirmIncomeDetailsService.saveBatch(confirmIncomeDetails);
-        log.error(String.valueOf(flag));
+                    param.setCurConfirmIncome(item.getSpiltPrice());
+                    param.setLeftNoConfirmIncome(item.getNoPrice());
+                    param.setPoints(item.getAllPoint());
+                    param.setCurConfirmPoints(item.getSpiltPoint());
+                    param.setConfirmedPoints(0);
+                    if ("887b86de893d476fb83d6d0f9a7fa834".equals(appId)) {
+                        param.setConfirmIncomeMethod(4);
+                        activateUserNewVector.stream()
+                                .filter(o -> o.getConsumeTime().isBefore(item.getConsumeTime())
+                                        && o.getSpiltPoint() != null).forEach(o -> {
+                            param.setConfirmedPoints(param.getConfirmedPoints() + o.getSpiltPoint());
+                        });
+                        param.setCurPeriod(
+                                (int) activateUserNewVector.stream()
+                                        .filter(o -> o.getConsumeTime().isBefore(item.getConsumeTime())
+                                                || o.getConsumeTime().equals(item.getConsumeTime())).count()
+                        );
+                    }
+                    param.setExpireStartTime(item.getExpireStartTime());
+                    param.setExpireEndTime(item.getExpireEndTime());
+                    confirmIncomeDetails.add(param);
+                });
+            }
+            boolean flag = confirmIncomeDetailsService.saveBatch(confirmIncomeDetails);
+            log.error(String.valueOf(flag));
+        });
     }
     // 小语种统计数据
     private void statisticsData(String appId) {
