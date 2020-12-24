@@ -3,6 +3,8 @@ package com.lhj.confirmIncome.service;
 import com.lhj.confirmIncome.entity.ZdIncomeActualIncome;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -12,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2020-11-19
  */
 public interface IZdIncomeActualIncomeService extends IService<ZdIncomeActualIncome> {
+    List<String> getMonths();
 }

@@ -4,6 +4,8 @@ import com.lhj.confirmIncome.entity.ZdIncomeActualIncome;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
  * <p>
  *  Mapper 接口
@@ -15,4 +17,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ZdIncomeActualIncomeMapper extends BaseMapper<ZdIncomeActualIncome> {
 
+    List<String> getMonths();
 }

@@ -6,6 +6,8 @@ import com.lhj.confirmIncome.service.IZdIncomeActualSaveService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务实现类
@@ -17,4 +19,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class ZdIncomeActualSaveServiceImpl extends ServiceImpl<ZdIncomeActualSaveMapper, ZdIncomeActualSave> implements IZdIncomeActualSaveService {
 
+
+    @Override
+    public List<String> getSaveMonth() {
+        return this.baseMapper.getSaveMonth();
+    }
 }
