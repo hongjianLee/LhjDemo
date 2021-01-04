@@ -22,9 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.management.monitor.Monitor;
 import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ public class RegisterUserNewController {
 
     private List<String> busienssTypes = new ArrayList<>();
 
+//    appIds
     private RegisterUserNewController() {
         appIds.add("06fedeb667084d0f9b6666e8baccc9e1");
         appIds.add("33447a0a428548b4bccf9c9fb39565c4");
@@ -86,13 +88,7 @@ public class RegisterUserNewController {
     private IConfirmIncomeStatisticsService confirmIncomeStatisticsService;
 
     @Autowired
-    private ICashCopyService cashCopyService;
-
-    @Autowired
     private IZdIncomeActualSkinService zdIncomeActualSkinService;
-
-    @Autowired
-    private IZdIncomeActual2Service zdIncomeActual2Service;
 
     @Autowired
     private IZdIncomeActualSaveService zdIncomeActualSaveService;
@@ -105,6 +101,22 @@ public class RegisterUserNewController {
 
     @Autowired
     private INetschoolPayOrderService netschoolPayOrderService;
+    /**
+     * 处理小语种数据
+     *
+     * @return String
+     */
+    @GetMapping("dealWithMinilangData")
+    public String dealWithMinilangData() {
+        appIds.stream().forEach(appId -> {
+            this.dealWithData(appId);
+            this.confirmIncomeData(appId);
+            this.statisticsData(appId);
+        });
+        return "success";
+    }
+
+
 
     /**
      * 处理现金收入表数据
@@ -113,9 +125,9 @@ public class RegisterUserNewController {
      */
     @GetMapping("dealWithCashData")
     public String dealWith() {
-        for (String appId : appIds) {
+        appIds.stream().forEach(appId -> {
             this.dealWithData(appId);
-        }
+        });
         return "success";
     }
 
@@ -126,12 +138,9 @@ public class RegisterUserNewController {
      */
     @GetMapping("dealWithConfirmData")
     public String dealWithConfirmData() {
-       /* for (String appId : appIds) {
-            if (!appId.equals("887b86de893d476fb83d6d0f9a7fa834")) {
-                this.confirmIncomeData(appId);
-            }
-        }*/
-        this.confirmIncomeData("887b86de893d476fb83d6d0f9a7fa834");
+        appIds.stream().forEach(appId -> {
+            this.confirmIncomeData(appId);
+        });
         return "success";
     }
 
@@ -142,86 +151,11 @@ public class RegisterUserNewController {
      */
     @GetMapping("dealWithStatistics")
     public String dealWithStatistics() {
-        for (String appId : appIds) {
+        appIds.stream().forEach(appId -> {
             this.statisticsData(appId);
-        }
+        });
         return "success";
     }
-
-    /*    *//**
-     * 日语现金收入处理
-     *
-     * @return String
-     *//*
-    @GetMapping("dealWithJapanData")
-    public String dealWithJapanData() {
-        // 现金流水
-        Vector<CashIncomeInfo> cashIncomeInfoVector = new Vector<>();
-        List<CashCopy> cashCopyList = cashCopyService.list();
-        cashCopyList.stream().forEach(item -> {
-            log.error(item.getId().toString());
-            // 用户商品
-            ConcurrentHashMap<String, Object> map = new ConcurrentHashMap<>();
-            map.put("uid", item.getCreateUser());
-            map.put("goods_id", item.getGoodsId());
-            Vector<StyUserGoods> styUserGoodsVector
-                    = new Vector<>(styUserGoodsService.listByMap(map));
-            // 确认收入数据
-            Vector<ZdIncomeActualSave> zdIncomeActualSaves
-                    = new Vector<>();
-            if (CollectionUtil.isNotEmpty(styUserGoodsVector)) {
-                ConcurrentHashMap<String, Object> map2 = new ConcurrentHashMap<>();
-                map2.put("ugid", styUserGoodsVector.get(0).getId());
-                zdIncomeActualSaves
-                        = new Vector<>(zdIncomeActualSaveService.listByMap(map2));
-            }
-            // 统计数据
-            QueryWrapper qw1 = new QueryWrapper();
-            qw1.eq("month_time", LocalDate.of(item.getPayTime().getYear(), item.getPayTime().getMonthValue(), 2));
-            qw1.eq("app_id", item.getAppId());
-            ConfirmIncomeStatistics confirmIncomeStatistics = confirmIncomeStatisticsService.getOne(qw1);
-            CashIncomeInfo param = new CashIncomeInfo();
-            param.setId(item.getId());
-            param.setCreateUser(Long.valueOf(item.getCreateUser()));
-            param.setCreateTime(item.getCreateTime());
-            param.setStatisticsId(confirmIncomeStatistics.getId());
-            param.setMonthTime(LocalDate.of(item.getPayTime().getYear(), item.getPayTime().getMonthValue(), 2));
-            param.setBusinessTagId(Long.valueOf(item.getBusinessTagId()));
-            param.setAppId(item.getAppId());
-            param.setOrderCode(item.getOrderCode());
-            param.setGoodsName(item.getGoodsName());
-            param.setGoodsId(Long.valueOf(item.getGoodsId()));
-            param.setZaoyuan(BigDecimal.valueOf(item.getZaoyuan()));
-            param.setSalvageValue(BigDecimal.valueOf(item.getSalvageValue()));
-            param.setCash(BigDecimal.valueOf(item.getCash()));
-            param.setOrderPrice(BigDecimal.valueOf(item.getOrderPrice()));
-            param.setPayMethod(item.getPayMethod());
-            param.setPayTime(item.getPayTime());
-            param.setConfirmIncomeMethod(1);
-            param.setOpenId(Long.valueOf(item.getOpenId()));
-            param.setUserName(item.getUserName());
-            if (CollectionUtil.isNotEmpty(zdIncomeActualSaves)) {
-                param.setServicePeriod(zdIncomeActualSaves.get(0).getPeriodMonth());
-                param.setFirstConfirmIncome(
-                        zdIncomeActualSaves.stream()
-                                .filter(o -> Objects.nonNull(o.getActualDate()))
-                                .min(Comparator.comparing(ZdIncomeActualSave::getActualDate))
-                                .get().getActualAmount()
-                );
-            } else {
-                param.setServicePeriod(1);
-                param.setFirstConfirmIncome(BigDecimal.ZERO);
-            }
-            param.setIsZaoyuanCharge(
-                    "早元充值".equals(param.getGoodsName())
-                            ? 1 : 2
-            );
-            cashIncomeInfoVector.add(param);
-        });
-        boolean flag = cashIncomeInfoService.saveBatch(cashIncomeInfoVector);
-        log.error(String.valueOf(flag));
-        return "success";
-    }*/
 
     /**
      * 日语现金收入处理
@@ -233,51 +167,53 @@ public class RegisterUserNewController {
 //        现金收入月份
         List<String> months = zdIncomeActualIncomeService.getMonths();
 //        分月份处理
-        months.stream().forEach(item -> {
-            log.error(item);
-            Date date = DateUtil.parseDate(item + "-01");
-            LocalDate monthTime = LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, 2);
-            QueryWrapper queryWrapper = new QueryWrapper();
-            queryWrapper.eq("data_date", item);
-            List<ZdIncomeActualIncome> list = zdIncomeActualIncomeService.list(queryWrapper);
-            List<CashIncomeInfo> cashIncomeInfos = new ArrayList<>();
-            list.stream().forEach(income -> {
-                log.error(income.getId().toString());
-                CashIncomeInfo cash = new CashIncomeInfo();
-                cash.setId(income.getId());
-                cash.setCreateUser(Long.valueOf(income.getPoUid()));
-                cash.setCreateTime(LocalDateTime.now());
-                cash.setAppId(this.getAppIdByJpTag(income.getBusinessType()));
-                cash.setStatisticsId(this.getStatisticsId(item + "-01", cash.getAppId()));
-                cash.setMonthTime(monthTime);
-                cash.setBusinessTagId(
-                        Long.valueOf(this.getBusinessTagIdByJpTag(income.getBusinessType()))
-                );
-                cash.setOrderCode(income.getPoSid());
-                cash.setGoodsName(income.getCourseTitle());
+        months.stream()
+//                .filter(o -> DateUtil.parseDate(o + "-01").isAfter(DateUtil.parseDate("2020-09-01")) )
+                .forEach(item -> {
+                    log.error(item);
+                    Date date = DateUtil.parseDate(item + "-01");
+                    LocalDate monthTime = LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, 2);
+                    QueryWrapper queryWrapper = new QueryWrapper();
+                    queryWrapper.eq("data_date", item);
+                    List<ZdIncomeActualIncome> list = zdIncomeActualIncomeService.list(queryWrapper);
+                    List<CashIncomeInfo> cashIncomeInfos = new ArrayList<>();
+                    list.stream().forEach(income -> {
+                        log.error(income.getId().toString());
+                        CashIncomeInfo cash = new CashIncomeInfo();
+                        cash.setId(income.getId());
+                        cash.setCreateUser(Long.valueOf(income.getPoUid()));
+                        cash.setCreateTime(LocalDateTime.now());
+                        cash.setAppId(this.getAppIdByJpTag(income.getBusinessType()));
+                        cash.setStatisticsId(this.getStatisticsId(item + "-01", cash.getAppId()));
+                        cash.setMonthTime(monthTime);
+                        cash.setBusinessTagId(
+                                Long.valueOf(this.getBusinessTagIdByJpTag(income.getBusinessType()))
+                        );
+                        cash.setOrderCode(income.getPoSid());
+                        cash.setGoodsName(income.getCourseTitle());
 //                cash.setGoodsId();
-                cash.setZaoyuan(BigDecimal.ZERO);
-                cash.setSalvageValue(BigDecimal.ZERO);
-                cash.setCash(BigDecimal.valueOf(income.getPayPrice()));
-                cash.setOrderPrice(cash.getCash());
-                cash.setPayMethod(this.getPayMethod(income.getPayType()));
-                cash.setPayTime(income.getAdddate());
-                cash.setConfirmIncomeMethod(1);
-                cash.setOpenId(Long.valueOf(income.getPoUid()));
-                cash.setUserName(income.getPoUser());
-                cash.setServicePeriod(income.getPeriodMonth());
-                cash.setIsOrderCompleted(2);
-                cash.setFirstConfirmIncome(BigDecimal.ZERO);
-                cash.setIsZaoyuanCharge(
-                        "早元充值".equals(cash.getGoodsName())
-                                ? 1 : 2
-                );
-                cash.setIsConfirming(2);
-                cashIncomeInfos.add(cash);
-            });
-            boolean flag = cashIncomeInfoService.saveBatch(cashIncomeInfos);
-            log.error(String.valueOf(flag));
-        });
+                        cash.setZaoyuan(BigDecimal.ZERO);
+                        cash.setSalvageValue(BigDecimal.ZERO);
+                        cash.setCash(BigDecimal.valueOf(income.getPayPrice()));
+                        cash.setOrderPrice(cash.getCash());
+                        cash.setPayMethod(this.getPayMethod(income.getPayType()));
+                        cash.setPayTime(income.getAdddate());
+                        cash.setConfirmIncomeMethod(1);
+                        cash.setOpenId(Long.valueOf(income.getPoUid()));
+                        cash.setUserName(income.getPoUser());
+                        cash.setServicePeriod(income.getPeriodMonth());
+                        cash.setIsOrderCompleted(2);
+                        cash.setFirstConfirmIncome(BigDecimal.ZERO);
+                        cash.setIsZaoyuanCharge(
+                                "早元充值".equals(cash.getGoodsName())
+                                        ? 1 : 2
+                        );
+                        cash.setIsConfirming(1);
+                        cashIncomeInfos.add(cash);
+                    });
+                    boolean flag = cashIncomeInfoService.saveBatch(cashIncomeInfos);
+                    log.error(String.valueOf(flag));
+                });
         return "success";
     }
 
@@ -285,138 +221,17 @@ public class RegisterUserNewController {
     public String dealWithJapanConfirmIncome() {
         List<String> months = zdIncomeActualSaveService.getSaveMonth();
         months.stream()
-                .filter(item -> {
-                    try {
-                        return DateUtils.parseDate(item + "-01", "yyyy-MM-dd").compareTo(
-                                DateUtils.parseDate("2020-11-01", "yyyy-MM-dd")) == 1;
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    return true;
-                })
+                .filter(item -> DateUtil.parseDate(item + "-01").isAfter(DateUtil.parseDate("2020-10-01")))
                 .forEach(o -> {
                     QueryWrapper<ZdIncomeActualSave> queryWrapper = new QueryWrapper<>();
                     queryWrapper.ne("actual_amount", 0);
                     queryWrapper.ne("period_month", 0);
                     queryWrapper.eq("actual_date", o);
                     List<ZdIncomeActualSave> zdIncomeActualSaveList = zdIncomeActualSaveService.list(queryWrapper);
-                    this.deal(zdIncomeActualSaveList);
+                    Date date = DateUtil.parseDate(o + "-01");
+                    LocalDate monthTime = LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, 2);
+                    this.dealConfirm(zdIncomeActualSaveList, monthTime);
                 });
-        return "success";
-    }
-
-    private void deal(List<ZdIncomeActualSave> zdIncomeActualSaveList) {
-        Vector<ConfirmIncomeDetails> confirmIncomeDetailsVector = new Vector<>();
-        zdIncomeActualSaveList.parallelStream().forEach(item -> {
-            log.error(item.getId().toString());
-            ConfirmIncomeDetails param = new ConfirmIncomeDetails();
-            QueryWrapper queryWrapper = new QueryWrapper();
-            queryWrapper.eq("id", item.getUgid());
-            // 用户商品
-            StyUserGoods styUserGoods = styUserGoodsService.getOne(queryWrapper);
-            // 现金收入记录
-            QueryWrapper qw1 = new QueryWrapper();
-            qw1.eq("ugid", item.getUgid());
-            Vector<ZdIncomeActual2> zdIncomeActual2s = new Vector<>(zdIncomeActual2Service.list(qw1));
-            param.setOpenId(1L);
-            if (Objects.nonNull(styUserGoods)) {
-                QueryWrapper qw2 = new QueryWrapper();
-                qw2.eq("create_user", styUserGoods.getUid());
-                qw2.eq("goods_id", styUserGoods.getGoodsId());
-//            qw2.eq("cash", item.getTotalAmount());
-                Vector<CashIncomeInfo> cashIncomeInfos = new Vector<>(
-                        cashIncomeInfoService.list(qw2)
-                );
-                param.setCreateUser(styUserGoods.getUid());
-                param.setGoodsId(Long.valueOf(styUserGoods.getGoodsId()));
-                param.setGoodsName(styUserGoods.getGoodsName());
-                param.setOpenId(styUserGoods.getUid());
-                if (CollectionUtil.isNotEmpty(cashIncomeInfos)) {
-                    param.setOrderCode(cashIncomeInfos.get(0).getOrderCode());
-                    param.setPayMethod(cashIncomeInfos.get(0).getPayMethod());
-                    param.setPayTime(cashIncomeInfos.get(0).getPayTime());
-                    param.setUserName(cashIncomeInfos.get(0).getUserName());
-                }
-                if (styUserGoods.getActivateTime().getYear() == Integer.valueOf(item.getActualYear())
-                        && styUserGoods.getActivateTime().getMonthValue() == Integer.valueOf(item.getActualMonth())) {
-                    param.setIsCurMonth(1);
-                }
-            }
-
-            // 统计数据
-            QueryWrapper qw3 = new QueryWrapper();
-            qw3.eq("month_time", LocalDate.of(Integer.valueOf(item.getActualYear()), Integer.valueOf(item.getActualMonth()), 2));
-            qw3.eq("app_id", this.getAppIdByJpTag(item.getBusinessType()));
-            ConfirmIncomeStatistics confirmIncomeStatistics = confirmIncomeStatisticsService.getOne(qw3);
-
-            ConcurrentHashMap<String, Object> map = new ConcurrentHashMap<>();
-            map.put("ugid", item.getUgid());
-            Vector<ZdIncomeActualSave> cons = new Vector<>(
-                    zdIncomeActualSaveService.listByMap(map)
-            );
-            param.setId(item.getId());
-            if (confirmIncomeStatistics != null) {
-                param.setStatisticsId(confirmIncomeStatistics.getId());
-            } else {
-                param.setStatisticsId(0L);
-            }
-
-            param.setCreateTime(LocalDateTime.now());
-            param.setBusinessTagId(Long.valueOf(this.getBusinessTagId(this.getAppIdByJpTag(item.getBusinessType()))));
-            param.setAppId(this.getAppIdByJpTag(item.getBusinessType()));
-            param.setMonthTime(
-                    LocalDate.of(Integer.valueOf(item.getActualYear()), Integer.valueOf(item.getActualMonth()), 2)
-            );
-
-            param.setCash(item.getTotalAmount());
-            param.setOrderPrice(item.getTotalAmount());
-            param.setServicePeriod(item.getPeriodMonth());
-            param.setCurPeriod(
-                    (int) cons.stream()
-                            .filter(o -> LocalDate.of(Integer.valueOf(o.getActualYear()), Integer.valueOf(o.getActualMonth()), 2)
-                                    .isBefore(LocalDate.of(Integer.valueOf(item.getActualYear()), Integer.valueOf(item.getActualMonth()), 2))
-                                    || LocalDate.of(Integer.valueOf(o.getActualYear()), Integer.valueOf(o.getActualMonth()), 2)
-                                    .equals(LocalDate.of(Integer.valueOf(item.getActualYear()), Integer.valueOf(item.getActualMonth()), 2))).count()
-            );
-            param.setCurConfirmIncome(item.getActualAmount());
-            param.setLeftNoConfirmIncome(item.getActualLeft());
-            if (CollectionUtil.isNotEmpty(zdIncomeActual2s) && zdIncomeActual2s.size() == 1) {
-                param.setExpireStartTime(zdIncomeActual2s.get(0).getActiveTime());
-                param.setExpireEndTime(zdIncomeActual2s.get(0).getExpireTime());
-            }
-            confirmIncomeDetailsVector.add(param);
-        });
-        boolean flag = confirmIncomeDetailsService.saveBatch(confirmIncomeDetailsVector);
-        log.error(String.valueOf(flag));
-    }
-
-    @GetMapping("orderCodeIsNullDeal")
-    public String orderCodeIsNullDeal() {
-        QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.isNull("order_code");
-        List<ConfirmIncomeDetails> confirmIncomeDetails = confirmIncomeDetailsService.list(queryWrapper);
-        confirmIncomeDetails.stream().forEach(item -> {
-            log.error(item.getCreateUser() + "---" + item.getGoodsId());
-            QueryWrapper qw = new QueryWrapper();
-            qw.eq("id", item.getId());
-            ZdIncomeActualSave zdIncomeActualSave = zdIncomeActualSaveService.getOne(qw);
-
-            if (Objects.nonNull(zdIncomeActualSave)) {
-                item.setOrderCode(String.valueOf(zdIncomeActualSave.getUgid()));
-                confirmIncomeDetailsService.updateById(item);
-            }
-
-            /* QueryWrapper qw = new QueryWrapper();
-            qw.eq("po_uid", item.getCreateUser());
-            qw.eq("goods_id", item.getGoodsId());
-            qw.eq("po_status", "交易成功");
-            List<NetschoolPayOrder> netschoolPayOrders = netschoolPayOrderService.list(qw);
-            if (CollectionUtil.isNotEmpty(netschoolPayOrders)) {
-                item.setOrderCode(netschoolPayOrders.get(0).getPoSid());
-                confirmIncomeDetailsService.updateById(item);
-            }*/
-        });
-
         return "success";
     }
 
@@ -435,14 +250,15 @@ public class RegisterUserNewController {
             param.setId(item.getId());
             param.setCreateUser(818261895487888888L);
             param.setCreateTime(LocalDateTime.now());
+            param.setAppId(this.getAppIdByJpTag(item.getBusinessType()));
             param.setBusinessTagId(
                     Long.valueOf(
                             this.getBusinessTagId(
-                                    this.getAppIdByJpTag(item.getBusinessType())
+                                    param.getAppId()
                             )
                     )
             );
-            param.setAppId(this.getAppIdByJpTag(item.getBusinessType()));
+
             Date date = DateUtil.parseDate(item.getActualDate() + "-01");
             LocalDateTime localDateTime = LocalDateTimeUtil.of(date);
             param.setMonthTime(
@@ -458,19 +274,113 @@ public class RegisterUserNewController {
             param.setOldOrderNoConfirmIncome(item.getUnActualCharge());
             confirmIncomeStatisticsVector.add(param);
         });
-        for (int i = 0; i < confirmIncomeStatisticsVector.size(); i++) {
-            if (i == 0) {
-                continue;
-            }
-            confirmIncomeStatisticsVector.get(i)
-                    .setPastNoConfirmIncome(
-                            confirmIncomeStatisticsVector.get(i - 1).getNewOrderNoConfirmIncome().add(confirmIncomeStatisticsVector.get(i - 1).getOldOrderNoConfirmIncome())
-                    );
-        }
+        List<ConfirmIncomeStatistics> jpList = this.dealStatistics(confirmIncomeStatisticsVector,"8275314362b14956867bf00673a0af33");
+        List<ConfirmIncomeStatistics> lxList = this.dealStatistics(confirmIncomeStatisticsVector, "80c5c10b75eb4e61a7bceb02ba649698");
+        List<ConfirmIncomeStatistics> kyList = this.dealStatistics(confirmIncomeStatisticsVector, "06c19ba4da1740fa9169f792b04d92e6");
+        List<ConfirmIncomeStatistics> jzList = this.dealStatistics(confirmIncomeStatisticsVector, "14e8933254dd461f92b18ae0d9294317");
+        confirmIncomeStatisticsVector.clear();
+        confirmIncomeStatisticsVector.addAll(jpList);
+        confirmIncomeStatisticsVector.addAll(lxList);
+        confirmIncomeStatisticsVector.addAll(kyList);
+        confirmIncomeStatisticsVector.addAll(jzList);
         boolean flag = confirmIncomeStatisticsService.saveBatch(confirmIncomeStatisticsVector);
         log.error(String.valueOf(flag));
         return "success";
     }
+
+
+    private void dealConfirm(List<ZdIncomeActualSave> zdIncomeActualSaves, LocalDate monthTime) {
+        Vector<ConfirmIncomeDetails> confirmIncomeDetails = new Vector<>();
+        zdIncomeActualSaves.stream().forEach(zdIncomeActualSave -> {
+            log.error(zdIncomeActualSave.getId().toString());
+            ConfirmIncomeDetails con = new ConfirmIncomeDetails();
+            QueryWrapper qw = new QueryWrapper();
+            qw.eq("id", zdIncomeActualSave.getUgid());
+            StyUserGoods styUserGoods = styUserGoodsService.getOne(qw);
+            if (Objects.nonNull(styUserGoods)) {
+                con.setCreateUser(styUserGoods.getUid());
+                con.setGoodsId(Long.valueOf(styUserGoods.getGoodsId()));
+                con.setGoodsName(styUserGoods.getGoodsName());
+                con.setOpenId(styUserGoods.getUid());
+                con.setExpireStartTime(styUserGoods.getActivateTime());
+                con.setExpireEndTime(
+                        con.getExpireStartTime().plusMonths(zdIncomeActualSave.getPeriodMonth())
+                );
+                QueryWrapper queryWrapper = new QueryWrapper();
+                queryWrapper.eq("po_uid", styUserGoods.getUid());
+                queryWrapper.eq("goods_id", styUserGoods.getGoodsId());
+                queryWrapper.eq("po_status", "交易成功");
+                queryWrapper.ne("pay_price", 0);
+                Vector<NetschoolPayOrder> np
+                        = new Vector<>(netschoolPayOrderService.list(queryWrapper));
+                if (CollectionUtil.isNotEmpty(np)) {
+                    con.setOrderCode(
+                            np.get(0).getPoSid()
+                    );
+                    con.setPayMethod(this.getPayMethod(np.get(0).getPayType()));
+                    con.setPayTime(
+                            LocalDateTime.ofEpochSecond(np.get(0).getPayTime(), 0, ZoneOffset.ofHours(8))
+                    );
+                    con.setUserName(np.get(0).getPoUser());
+                } else {
+                    con.setOrderCode(zdIncomeActualSave.getUgid().toString());
+                    con.setPayMethod("");
+                }
+
+            } else {
+                con.setCreateUser(0L);
+                con.setOpenId(0L);
+                con.setOrderCode(zdIncomeActualSave.getUgid().toString());
+                con.setPayMethod("");
+            }
+            con.setId(zdIncomeActualSave.getId());
+            con.setCreateTime(LocalDateTime.now());
+            con.setBusinessTagId(Long.valueOf(this.getBusinessTagIdByJpTag(zdIncomeActualSave.getBusinessType())));
+            con.setAppId(this.getAppIdByJpTag(zdIncomeActualSave.getBusinessType()));
+            con.setMonthTime(monthTime);
+            con.setCash(zdIncomeActualSave.getTotalAmount());
+            con.setZaoyuan(BigDecimal.ZERO);
+            con.setSalvageValue(BigDecimal.ZERO);
+            con.setOrderPrice(con.getCash());
+            con.setConfirmIncomeMethod(1);
+            con.setServicePeriod(zdIncomeActualSave.getPeriodMonth());
+            con.setStatisticsId(
+                    this.getStatisticsId(this.localDateToString(con.getMonthTime()) + "-01", con.getAppId())
+            );
+            QueryWrapper qu = new QueryWrapper();
+            qu.eq("ugid", zdIncomeActualSave.getUgid());
+            qu.lt("actual_date", zdIncomeActualSave.getActualDate());
+            con.setCurPeriod(zdIncomeActualSaveService.count(qu) + 1);
+            con.setIsCurMonth(
+                    con.getCurPeriod() == 1
+                            ? 1 : 2
+            );
+            con.setCurConfirmIncome(zdIncomeActualSave.getActualAmount());
+            con.setLeftNoConfirmIncome(zdIncomeActualSave.getActualLeft());
+            confirmIncomeDetails.add(con);
+        });
+        boolean flag = confirmIncomeDetailsService.saveBatch(confirmIncomeDetails);
+        log.error(String.valueOf(flag));
+    }
+
+    private List<ConfirmIncomeStatistics> dealStatistics(List<ConfirmIncomeStatistics> list, String appId) {
+        List<ConfirmIncomeStatistics> confirmIncomeStatistics
+                = list.stream()
+                .filter(o -> appId.equals(o.getAppId()))
+                .sorted(Comparator.comparing(ConfirmIncomeStatistics::getMonthTime))
+                .collect(Collectors.toList());
+        for (int i = 0; i < confirmIncomeStatistics.size(); i++) {
+            if (i == 0) {
+                continue;
+            }
+            confirmIncomeStatistics.get(i)
+                    .setPastNoConfirmIncome(
+                            confirmIncomeStatistics.get(i - 1).getNewOrderNoConfirmIncome().add(confirmIncomeStatistics.get(i - 1).getOldOrderNoConfirmIncome())
+                    );
+        }
+        return list;
+    }
+
 
     // 小语种现金收入
     private void dealWithData(String appId) {
@@ -498,7 +408,8 @@ public class RegisterUserNewController {
                             actMap.put("order_id", payOrder.getOrderCode());
                             cashIncomeInfo.setOrderCode(item.getOrderId());
                         }
-                        List<ActivateUserNew> activateUserNews = activateUserNewService.listByMap(actMap);
+                        List<ActivateUserNew> activateUserNews
+                                = activateUserNewService.listByMap(actMap);
 
                         cashIncomeInfo.setId(item.getId());
                         cashIncomeInfo.setCreateUser(item.getCreateUser());
@@ -535,7 +446,7 @@ public class RegisterUserNewController {
                             cashIncomeInfo.setFirstConfirmIncome(
                                     activateUserNews.stream()
                                             .filter(o -> o.getMonthTime() != null)
-                                            .min((e1, e2) -> e1.getMonthTime().compareTo(e2.getMonthTime()))
+                                            .min(Comparator.comparing(ActivateUserNew::getMonthTime))
                                             .get().getSpiltPrice()
                             );
                         } else {
@@ -715,45 +626,6 @@ public class RegisterUserNewController {
         confirmIncomeStatisticsService.saveBatch(confirmIncomeStatisticsVector);
     }
 
-    private String getBusinessTagId(String appId) {
-        String businessTagId = "";
-        // 日语
-        if ("8275314362b14956867bf00673a0af33".equals(appId)) {
-            businessTagId = "1325646987453792256";
-        } else if ("06fedeb667084d0f9b6666e8baccc9e1".equals(appId)) {
-            // 韩语
-            businessTagId = "1319100085069414400";
-        } else if ("9058f61b5e814c2ebaa4e062df162235".equals(appId)) {
-            // 德语
-            businessTagId = "1319035249014865920";
-        } else if ("6900443d62c54f5090604f0468a5f20e".equals(appId)) {
-            // 法语
-            businessTagId = "1319100671957401600";
-        } else if ("559d6de1e10e4470b21715ff7041412e".equals(appId)) {
-            // 西语
-            businessTagId = "1319102858632626176";
-        } else if ("887b86de893d476fb83d6d0f9a7fa834".equals(appId)) {
-            // 倍普
-            businessTagId = "1322095189157740544";
-        } else if ("80c5c10b75eb4e61a7bceb02ba649698".equals(appId)) {
-            // 留学
-            businessTagId = "1325647027379372032";
-        } else if ("06c19ba4da1740fa9169f792b04d92e6".equals(appId)) {
-            // 考研
-            businessTagId = "1325647047147126784";
-        } else if ("14e8933254dd461f92b18ae0d9294317".equals(appId)) {
-            // 就职
-            businessTagId = "1325647007070552064";
-        } else if ("72d6c41307e14c478d836072a62db662".equals(appId)) {
-            // 微课
-            businessTagId = "";
-        } else if ("f240292f76bf4bb1a2336f1fa51421c9".equals(appId)) {
-            // 青柠五十音
-            businessTagId = "";
-        }
-        return businessTagId;
-    }
-
     /**
      * 支付方式转换
      *
@@ -851,7 +723,60 @@ public class RegisterUserNewController {
         queryWrapper.eq("month_time", monthTime);
         ConfirmIncomeStatistics confirmIncomeStatistics
                 = confirmIncomeStatisticsService.getOne(queryWrapper);
-        return confirmIncomeStatistics.getId();
+        if (Objects.nonNull(confirmIncomeStatistics)) {
+            return confirmIncomeStatistics.getId();
+        } else {
+            ConfirmIncomeStatistics cis = new ConfirmIncomeStatistics();
+            cis.setId(IdUtil.getSnowflake(1, 1).nextId());
+            cis.setAppId(appId);
+            cis.setBusinessTagId(Long.valueOf(this.getBusinessTagId(cis.getAppId())));
+            cis.setCreateTime(LocalDateTime.now());
+            Date date = DateUtil.parseDate(monthTime);
+            LocalDate mt = LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, 2);
+            cis.setMonthTime(mt);
+            confirmIncomeStatisticsService.save(cis);
+            return cis.getId();
+        }
+    }
+
+
+    private String getBusinessTagId(String appId) {
+        String businessTagId = "";
+        // 日语
+        if ("8275314362b14956867bf00673a0af33".equals(appId)) {
+            businessTagId = "1325646987453792256";
+        } else if ("06fedeb667084d0f9b6666e8baccc9e1".equals(appId)) {
+            // 韩语
+            businessTagId = "1319100085069414400";
+        } else if ("9058f61b5e814c2ebaa4e062df162235".equals(appId)) {
+            // 德语
+            businessTagId = "1319035249014865920";
+        } else if ("6900443d62c54f5090604f0468a5f20e".equals(appId)) {
+            // 法语
+            businessTagId = "1319100671957401600";
+        } else if ("559d6de1e10e4470b21715ff7041412e".equals(appId)) {
+            // 西语
+            businessTagId = "1319102858632626176";
+        } else if ("887b86de893d476fb83d6d0f9a7fa834".equals(appId)) {
+            // 倍普
+            businessTagId = "1322095189157740544";
+        } else if ("80c5c10b75eb4e61a7bceb02ba649698".equals(appId)) {
+            // 留学
+            businessTagId = "1325647027379372032";
+        } else if ("06c19ba4da1740fa9169f792b04d92e6".equals(appId)) {
+            // 考研
+            businessTagId = "1325647047147126784";
+        } else if ("14e8933254dd461f92b18ae0d9294317".equals(appId)) {
+            // 就职
+            businessTagId = "1325647007070552064";
+        } else if ("72d6c41307e14c478d836072a62db662".equals(appId)) {
+            // 微课
+            businessTagId = "";
+        } else if ("f240292f76bf4bb1a2336f1fa51421c9".equals(appId)) {
+            // 青柠五十音
+            businessTagId = "";
+        }
+        return businessTagId;
     }
 
     private String getBusinessTagIdByJpTag(String tag) {
@@ -896,6 +821,11 @@ public class RegisterUserNewController {
             payMethod = "netpay";
         }
         return payMethod;
+    }
+
+    public String localDateToString(LocalDate date) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM");
+        return date.format(fmt);
     }
     /*alipay
             axpay
