@@ -221,7 +221,7 @@ public class RegisterUserNewController {
     public String dealWithJapanConfirmIncome() {
         List<String> months = zdIncomeActualSaveService.getSaveMonth();
         months.stream()
-                .filter(item -> DateUtil.parseDate(item + "-01").isAfter(DateUtil.parseDate("2020-10-01")))
+//                .filter(item -> DateUtil.parseDate(item + "-01").before(DateUtil.parseDate("2020-11-01")))
                 .forEach(o -> {
                     QueryWrapper<ZdIncomeActualSave> queryWrapper = new QueryWrapper<>();
                     queryWrapper.ne("actual_amount", 0);
@@ -274,15 +274,15 @@ public class RegisterUserNewController {
             param.setOldOrderNoConfirmIncome(item.getUnActualCharge());
             confirmIncomeStatisticsVector.add(param);
         });
-        List<ConfirmIncomeStatistics> jpList = this.dealStatistics(confirmIncomeStatisticsVector,"8275314362b14956867bf00673a0af33");
-        List<ConfirmIncomeStatistics> lxList = this.dealStatistics(confirmIncomeStatisticsVector, "80c5c10b75eb4e61a7bceb02ba649698");
-        List<ConfirmIncomeStatistics> kyList = this.dealStatistics(confirmIncomeStatisticsVector, "06c19ba4da1740fa9169f792b04d92e6");
-        List<ConfirmIncomeStatistics> jzList = this.dealStatistics(confirmIncomeStatisticsVector, "14e8933254dd461f92b18ae0d9294317");
-        confirmIncomeStatisticsVector.clear();
-        confirmIncomeStatisticsVector.addAll(jpList);
-        confirmIncomeStatisticsVector.addAll(lxList);
-        confirmIncomeStatisticsVector.addAll(kyList);
-        confirmIncomeStatisticsVector.addAll(jzList);
+//        List<ConfirmIncomeStatistics> jpList = this.dealStatistics(confirmIncomeStatisticsVector,"8275314362b14956867bf00673a0af33");
+//        List<ConfirmIncomeStatistics> lxList = this.dealStatistics(confirmIncomeStatisticsVector, "80c5c10b75eb4e61a7bceb02ba649698");
+//        List<ConfirmIncomeStatistics> kyList = this.dealStatistics(confirmIncomeStatisticsVector, "06c19ba4da1740fa9169f792b04d92e6");
+//        List<ConfirmIncomeStatistics> jzList = this.dealStatistics(confirmIncomeStatisticsVector, "14e8933254dd461f92b18ae0d9294317");
+//        confirmIncomeStatisticsVector.clear();
+//        confirmIncomeStatisticsVector.addAll(jpList);
+//        confirmIncomeStatisticsVector.addAll(lxList);
+//        confirmIncomeStatisticsVector.addAll(kyList);
+//        confirmIncomeStatisticsVector.addAll(jzList);
         boolean flag = confirmIncomeStatisticsService.saveBatch(confirmIncomeStatisticsVector);
         log.error(String.valueOf(flag));
         return "success";
