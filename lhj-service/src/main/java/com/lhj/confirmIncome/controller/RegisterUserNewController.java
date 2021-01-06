@@ -317,7 +317,7 @@ public class RegisterUserNewController {
                     con.setOrderCode(
                             np.get(0).getPoSid()
                     );
-                    con.setPayMethod(this.getPayMethod(np.get(0).getPayType()));
+                    con.setPayMethod(np.get(0).getPayType());
                     con.setPayTime(
                             LocalDateTime.ofEpochSecond(np.get(0).getPayTime(), 0, ZoneOffset.ofHours(8))
                     );
