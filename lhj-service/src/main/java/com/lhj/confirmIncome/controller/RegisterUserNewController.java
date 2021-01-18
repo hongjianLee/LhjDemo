@@ -189,7 +189,7 @@ public class RegisterUserNewController {
                         cash.setBusinessTagId(
                                 Long.valueOf(this.getBusinessTagIdByJpTag(income.getBusinessType()))
                         );
-                        cash.setOrderCode(income.getPoSid());
+                        cash.setOrderCode(income.getPoSid().trim());
                         cash.setGoodsName(income.getCourseTitle());
 //                cash.setGoodsId();
                         cash.setZaoyuan(BigDecimal.ZERO);
@@ -315,7 +315,7 @@ public class RegisterUserNewController {
                         = new Vector<>(netschoolPayOrderService.list(queryWrapper));
                 if (CollectionUtil.isNotEmpty(np)) {
                     con.setOrderCode(
-                            np.get(0).getPoSid()
+                            np.get(0).getPoSid().trim()
                     );
                     con.setPayMethod(np.get(0).getPayType());
                     con.setPayTime(
