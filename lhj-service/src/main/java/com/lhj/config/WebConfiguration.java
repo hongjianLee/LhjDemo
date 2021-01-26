@@ -3,13 +3,18 @@ package com.lhj.config;
 
 import com.lhj.utils.redis.JedisTemplate;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
 @Slf4j
 @Configuration
+@RefreshScope
 public class WebConfiguration {
 
     /**
@@ -72,4 +77,11 @@ public class WebConfiguration {
         return template;
     }
 
+    @Bean(name = "redissonClient")
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        String address = "redis://" + redisHost + ":" + redisPort;
+        config.useSingleServer().setAddress(address).setPassword(redisPassword).setDatabase(0);
+        return Redisson.create(config);
+    }
 }
