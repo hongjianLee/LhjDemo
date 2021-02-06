@@ -83,3 +83,6 @@ spring:
 #  name-server: 39.105.162.102:9876
 #  consumer:
 #    group: lhjRocketConsumerGroup
+#es:
+#  http:
+#    url: http://localhost:9200
