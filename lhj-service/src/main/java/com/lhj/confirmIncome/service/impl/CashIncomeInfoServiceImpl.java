@@ -6,6 +6,8 @@ import com.lhj.confirmIncome.service.ICashIncomeInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 现金收入详情表 服务实现类
@@ -16,5 +18,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CashIncomeInfoServiceImpl extends ServiceImpl<CashIncomeInfoMapper, CashIncomeInfo> implements ICashIncomeInfoService {
-
+    @Override
+    public List<String> getMonthTime() {
+        return this.getBaseMapper().getMonthTime();
+    }
 }

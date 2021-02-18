@@ -6,6 +6,8 @@ import com.lhj.confirmIncome.service.IConfirmIncomeDetailsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 月确认收入详情 服务实现类
@@ -17,4 +19,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ConfirmIncomeDetailsServiceImpl extends ServiceImpl<ConfirmIncomeDetailsMapper, ConfirmIncomeDetails> implements IConfirmIncomeDetailsService {
 
+    @Override
+    public List<String> getMonth() {
+        return this.baseMapper.getMonthTime();
+    }
 }

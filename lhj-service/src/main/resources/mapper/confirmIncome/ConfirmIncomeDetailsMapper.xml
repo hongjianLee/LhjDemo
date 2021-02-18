@@ -2,4 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lhj.confirmIncome.mapper.ConfirmIncomeDetailsMapper">
 
+    <select id="getMonthTime" resultType="java.lang.String">
+        select month_time
+        from confirm_income_details
+        group by month_time
+        order by month_time asc;
+    </select>
 </mapper>
