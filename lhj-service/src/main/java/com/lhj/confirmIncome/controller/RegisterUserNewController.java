@@ -30,6 +30,8 @@ import com.lhj.confirmIncome.service.IStyUserGoodsService;
 import com.lhj.confirmIncome.service.IZdIncomeActualIncomeService;
 import com.lhj.confirmIncome.service.IZdIncomeActualSaveService;
 import com.lhj.confirmIncome.service.IZdIncomeActualSkinService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,7 @@ import java.util.stream.Collectors;
  * @since 2020-11-16
  */
 @Slf4j
+@Api(description = "确认收入数据处理")
 @RestController
 @RequestMapping("/confirmIncome/register-user-new")
 public class RegisterUserNewController {
@@ -147,6 +150,7 @@ public class RegisterUserNewController {
      *
      * @return String
      */
+    @ApiOperation(value = "第一步小语种现金收入处理1", notes = "第一步小语种现金收入处理2")
     @GetMapping("dealWithCashData")
     public String dealWith() {
         appIds.stream().forEach(appId -> {
@@ -160,6 +164,7 @@ public class RegisterUserNewController {
      *
      * @return String
      */
+    @ApiOperation(value = "第二步小语种确认收入处理1", notes = "第二步小语种确认收入处理2")
     @GetMapping("dealWithConfirmData")
     public String dealWithConfirmData() {
         appIds.stream().forEach(appId -> {
@@ -173,6 +178,7 @@ public class RegisterUserNewController {
      *
      * @return String
      */
+    @ApiOperation(value = "第三步小语种统计表数据处理1", notes = "第二步小语种统计表数据处理2")
     @GetMapping("dealWithStatistics")
     public String dealWithStatistics() {
         appIds.stream().forEach(appId -> {
@@ -186,6 +192,7 @@ public class RegisterUserNewController {
      *
      * @return String
      */
+    @ApiOperation(value = "第五步日语现金收入数据处理1",notes = "第五步日语现金收入数据处理2")
     @GetMapping("dealWithJapanCashData")
     public String dealWithJapanCashData() {
 //        现金收入月份
@@ -241,6 +248,7 @@ public class RegisterUserNewController {
         return "success";
     }
 
+    @ApiOperation(value = "第六步日语确认收入数据处理1", notes = "第六步日语确认收入数据处理2")
     @GetMapping("dealWithJapanConfirmIncome")
     public String dealWithJapanConfirmIncome() {
         List<String> months = zdIncomeActualSaveService.getSaveMonth();
@@ -264,6 +272,7 @@ public class RegisterUserNewController {
      *
      * @return String
      */
+    @ApiOperation(value = "第四步日语统计表数据处理1",notes = "第四步日语统计表数据处理2")
     @GetMapping("dealWithJapanStatistics")
     public String dealWithJapanStatistics() {
         List<ZdIncomeActualSkin> zdIncomeActualSkins = zdIncomeActualSkinService.list();
