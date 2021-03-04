@@ -253,7 +253,7 @@ public class RegisterUserNewController {
     public String dealWithJapanConfirmIncome() {
         List<String> months = zdIncomeActualSaveService.getSaveMonth();
         months.stream()
-//                .filter(item -> DateUtil.parseDate(item + "-01").before(DateUtil.parseDate("2020-11-01")))
+//                .filter(item -> DateUtil.parseDate(item + "-01").after(DateUtil.parseDate("2021-01-01")))
                 .forEach(o -> {
                     QueryWrapper<ZdIncomeActualSave> queryWrapper = new QueryWrapper<>();
                     queryWrapper.ne("actual_amount", 0);

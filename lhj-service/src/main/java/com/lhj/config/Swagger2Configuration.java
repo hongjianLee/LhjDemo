@@ -47,7 +47,7 @@ public class Swagger2Configuration {
                 .title("确认收入-api文档")
                 .description("确认收入-确认收入模块api文档")
                 .version("1.0")
-                .contact(new Contact("确认收入项目组","","772147079@qq.com"))
+                .contact(new Contact("李洪健","","772147079@qq.com"))
                 .build();
     }
 
