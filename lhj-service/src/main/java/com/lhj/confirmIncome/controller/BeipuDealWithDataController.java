@@ -1,6 +1,5 @@
 package com.lhj.confirmIncome.controller;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.lhj.confirmIncome.entity.ActivateUserNew;
@@ -24,7 +23,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Future;
 
 @Slf4j
 @RestController
@@ -51,7 +49,7 @@ public class BeipuDealWithDataController {
         orderIdList.stream().forEach(item -> {
             log.error(item);
             QueryWrapper queryWrapper = new QueryWrapper();
-            queryWrapper.eq("order_id", item);
+            queryWrapper.eq("order_id", item.trim());
             List<RegisterUserNew> entitys = registerUserNewService.list(queryWrapper);
             RegisterUserNew entity = entitys.get(0);
             entity.setConsumePrice(
@@ -60,7 +58,7 @@ public class BeipuDealWithDataController {
             );
             ActivateUserNew act = new ActivateUserNew();
             act.setId(IdUtil.getSnowflake(1, 1).nextId());
-            act.setStatisticalId(1357119802282852352L);
+            act.setStatisticalId(1366937783159582720L);
             act.setOrderId(item);
             act.setConsumePrice(entity.getConsumePrice());
             act.setConsumeTime(LocalDateTime.now());
@@ -72,7 +70,7 @@ public class BeipuDealWithDataController {
             act.setAppId("887b86de893d476fb83d6d0f9a7fa834");
             act.setServiceTime(1);
             act.setSpiltPrice(entity.getConsumePrice());
-            act.setMonthTime(LocalDate.of(2021, 1, 2));
+            act.setMonthTime(LocalDate.of(2021, 2, 2));
             act.setIsCurrent(2);
             act.setAllSpiltPrice(entity.getConsumePrice());
             act.setNoPrice(BigDecimal.ZERO);
