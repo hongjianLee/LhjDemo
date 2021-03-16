@@ -4,6 +4,7 @@ package com.lhj.controller;
 import com.alibaba.fastjson.JSON;
 import com.lhj.lhjRocketmqp.IService.IMqProducerService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/roketmqp")
 public class RocketMqpController {
 
-    @Reference(version = "${dubbo.consumer.versoin}")
+    @DubboReference(version = "lhj")
     private IMqProducerService mqProducerService;
 
     @GetMapping("message/{id}")
