@@ -508,9 +508,9 @@ public class RegisterUserNewController {
                     Vector<ConfirmIncomeDetails> confirmIncomeDetails = new Vector<>();
                     if (CollectionUtil.isNotEmpty(activateUserNews)) {
                         activateUserNews.parallelStream().forEach(item -> {
-                            log.error(item.getOrderId());
+                            log.error(item.getOrderId().trim());
                             QueryWrapper queryWrapper = new QueryWrapper<PayOrder>();
-                            queryWrapper.eq("order_code", item.getOrderId());
+                            queryWrapper.eq("order_code", item.getOrderId().trim());
                             PayOrder payOrder = payOrderService.getOne(queryWrapper);
                             ConcurrentHashMap<String, Object> actMap = new ConcurrentHashMap<>();
                             actMap.put("order_id", payOrder.getOrderCode());
